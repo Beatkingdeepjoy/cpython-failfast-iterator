@@ -49,14 +49,14 @@ Instead, PEP 659 introduces a **Specializing Adaptive Interpreter (Tier-1 Quicke
 ```mermaid
 flowchart TD
     A["Python for-loop: for x in lst:"] --> B["Opcode: FOR_ITER (Generic)"]
-    B -->|Adaptive Counter Triggers| C["Specialized Opcode: FOR_ITER_LIST"]
-    C --> D{"PyList_GET_SIZE(seq) == it->it_size ?"}
-    D -->|Yes (Fast Path)| E["Direct array index: PyList_GET_ITEM(seq, it_index++)"]
-    D -->|No (List Mutated!)| F["DEOPT_IF triggers!"]
-    F -->|Deoptimize| B
+    B -->|"Adaptive Counter Triggers"| C["Specialized Opcode: FOR_ITER_LIST"]
+    C --> D{"List size unchanged?"}
+    D -->|"Yes: Fast Path"| E["Direct array index: PyList_GET_ITEM"]
+    D -->|"No: List Mutated!"| F["DEOPT_IF triggers"]
+    F -->|"Deoptimize"| B
     B --> G["Fallback to tp_iternext (listiter_next)"]
     G --> H{"Check list size in C"}
-    H -->|Mismatch Detected| I["Raise RuntimeError: list changed size during iteration"]
+    H -->|"Mismatch Detected"| I["Raise RuntimeError: list changed size during iteration"]
 ```
 
 ### The Fast Path vs. The Deoptimization Fallback:
